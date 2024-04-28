@@ -1,7 +1,8 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-
+import 'package:polytech/ajouteretudaint/AjouterEtudiant.dart';
+import 'package:get/get.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({Key? key}) : super(key: key);
@@ -25,16 +26,22 @@ class CustomDrawer extends StatelessWidget {
           ),
 
           ListTile(
-            title: Text('Item 1'),
+            title: Text('Liste des etudiants'),
             onTap: () {
               // Handle item tap
             },
           ),
 
+          Divider(color: Colors.grey, thickness: 0.5),
+
           ListTile(
-            title: Text('Item 2'),
+            title: Text('Ajouter Etudiant'),
             onTap: () {
-              // Handle item tap
+              Get.to(
+                    () => AjouterEtudiant(),
+                transition: Transition.fadeIn,
+                duration: Duration(milliseconds: 500),
+              );
             },
           ),
 

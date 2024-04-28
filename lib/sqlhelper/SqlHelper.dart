@@ -1,6 +1,5 @@
 // ignore_for_file: file_names
 
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SQLHelper {
@@ -9,17 +8,21 @@ class SQLHelper {
 
   // Method to initialize the database
   static Future<void> _initDatabase() async {
-    if (_database == null) {
-      _database = await openDatabase(
-        join(await getDatabasesPath(), 'etudiant_database.db'),
-        onCreate: (db, version) {
-          return db.execute(
-            'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)',
-          );
-        },
-        version: 1,
-      );
-    }
+    // Your database initialization logic goes here (assuming it's not done elsewhere)
+    _database = await openDatabase(
+      _tableName,
+      version: 1,
+      onCreate: (db, version) {
+        // Create table statement with necessary columns (id, name, age)
+        db.execute('''
+          CREATE TABLE $_tableName (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            age INTEGER NOT NULL
+          )
+        ''');
+      },
+    );
   }
 
   // Method to insert a new etudiant
@@ -32,9 +35,8 @@ class SQLHelper {
     );
   }
 
-  // Method to retrieve all etudiants
   static Future<List<Etudiant>> getAllEtudiants() async {
-    await _initDatabase();
+    await _initDatabase(); // Ensure database is initialized
     final List<Map<String, dynamic>> maps = await _database!.query(_tableName);
     return List.generate(maps.length, (i) {
       return Etudiant(
