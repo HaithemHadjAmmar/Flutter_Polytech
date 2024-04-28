@@ -18,8 +18,8 @@ class _Etudiant {
 }
 
 class _AjouterEtudiantState extends State<AjouterEtudiant> {
-  final _formKey = GlobalKey<FormState>(); // Create a form key
-  final _etudiant = _Etudiant(); // Create an instance of _Etudiant
+  final _formKey = GlobalKey<FormState>();
+  final _etudiant = _Etudiant();
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +36,27 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
           child: Column(
             children: [
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nom',
+                  contentPadding: const EdgeInsets.all(12.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.grey, // Border color
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -45,32 +64,58 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
                   }
                   return null;
                 },
-                onSaved: (value) => _etudiant.name = value!, // Save name
+                onSaved: (value) => _etudiant.name = value!,
               ),
+
+              SizedBox(height: 20),
+
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Age',
+                  contentPadding: const EdgeInsets.all(12.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
-                keyboardType: TextInputType.number, // Allow only numbers
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer un age';
                   }
                   return null;
                 },
-                onSaved: (value) => _etudiant.age = int.parse(value!), // Save age
+                onSaved: (value) => _etudiant.age = int.parse(value!),
               ),
+
+              SizedBox(height: 20),
+
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save(); // Save form data
 
-                    // Call insertEtudiant to insert data into database
-                    await SQLHelper.insertEtudiant(Etudiant(
+                    // Create an Etudiant object from _etudiant data
+                    final newEtudiant = Etudiant(
                       id: 0, // Auto-incrementing ID
                       name: _etudiant.name,
                       age: _etudiant.age,
-                    ));
+                    );
+                    await SqlHelper.insertEtudiant([newEtudiant]);
 
                     // Show a success message (optional)
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -90,7 +135,7 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
                     );
                   }
                 },
-                child: const Text('Ajouter'),
+                child: const Text('Ajouter', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               ),
             ],
           ),

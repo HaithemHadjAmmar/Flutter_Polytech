@@ -2,15 +2,20 @@
 
 import 'package:sqflite/sqflite.dart';
 
-class SQLHelper {
+class SqlHelper {
+  static const String _databaseName = 'etudiants.db';
+  static const String _tableName = 'etudiants';
   static Database? _database;
-  static const String _tableName = 'etudiant';
 
   // Method to initialize the database
   static Future<void> _initDatabase() async {
-    // Your database initialization logic goes here (assuming it's not done elsewhere)
+    if (_database != null) return;
+
+    final databasePath = await getDatabasesPath();
+    final path = '$databasePath/$_databaseName';
+
     _database = await openDatabase(
-      _tableName,
+      path,
       version: 1,
       onCreate: (db, version) {
         // Create table statement with necessary columns (id, name, age)
@@ -26,31 +31,26 @@ class SQLHelper {
   }
 
   // Method to insert a new etudiant
-  static Future<void> insertEtudiant(Etudiant etudiant) async {
+  static Future<void> insertEtudiant(List<Etudiant> etudiants) async {
     await _initDatabase();
-    await _database?.insert(
-      _tableName,
-      etudiant.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final batch = _database!.batch();
+    for (final etudiant in etudiants) {
+      batch.insert(_tableName, etudiant.toMap());
+    }
+    await batch.commit();
   }
 
+  // Method to get all etudiants
   static Future<List<Etudiant>> getAllEtudiants() async {
-    await _initDatabase(); // Ensure database is initialized
+    await _initDatabase();
     final List<Map<String, dynamic>> maps = await _database!.query(_tableName);
-    return List.generate(maps.length, (i) {
-      return Etudiant(
-        id: maps[i]['id'],
-        name: maps[i]['name'],
-        age: maps[i]['age'],
-      );
-    });
+    return List.generate(maps.length, (i) => Etudiant.fromMap(maps[i]));
   }
 
   // Method to update an existing etudiant
   static Future<void> updateEtudiant(Etudiant etudiant) async {
     await _initDatabase();
-    await _database?.update(
+    await _database!.update(
       _tableName,
       etudiant.toMap(),
       where: 'id = ?',
@@ -61,11 +61,7 @@ class SQLHelper {
   // Method to delete an etudiant
   static Future<void> deleteEtudiant(int id) async {
     await _initDatabase();
-    await _database?.delete(
-      _tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _database!.delete(_tableName, where: 'id = ?', whereArgs: [id]);
   }
 }
 
@@ -74,7 +70,11 @@ class Etudiant {
   final String name;
   final int age;
 
-  Etudiant({required this.id, required this.name, required this.age});
+  const Etudiant({
+    required this.id,
+    required this.name,
+    required this.age,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -82,5 +82,13 @@ class Etudiant {
       'name': name,
       'age': age,
     };
+  }
+
+  factory Etudiant.fromMap(Map<String, dynamic> map) {
+    return Etudiant(
+      id: map['id'] as int,
+      name: map['name'] as String,
+      age: map['age'] as int,
+    );
   }
 }

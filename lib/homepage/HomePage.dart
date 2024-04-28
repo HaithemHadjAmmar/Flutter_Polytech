@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:polytech/Widgets/CustomDrawer.dart';
 import 'package:polytech/sqlhelper/SqlHelper.dart';
+import 'package:polytech/updatesetudiant/UpdateEtudiants.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,9 +23,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _getListeEtudiants() async {
-    final newEtudiants = await SQLHelper.getAllEtudiants();
+    final newEtudiants = await SqlHelper.getAllEtudiants();
     setState(() {
-      _etudiants.addAll(newEtudiants);
+      _etudiants = newEtudiants;
     });
   }
 
@@ -39,8 +41,7 @@ class _HomePageState extends State<HomePage> {
           'Acceuil',
           style: TextStyle(
               fontSize: 25,
-              fontWeight: FontWeight.w700
-          ),
+              fontWeight: FontWeight.w700),
         ),
       ),
       body: SingleChildScrollView(
@@ -70,15 +71,36 @@ class _HomePageState extends State<HomePage> {
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.greenAccent),
                 onPressed: () {
-                  // Handle edit action for this etudiant
-                  // You can navigate to an edit form and pre-populate data
+                  Get.to(UpdateEtudiant(etudiant: etudiant),
+                      transition: Transition.fadeIn,
+                     duration: Duration(milliseconds: 500));
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () async {
-                  await SQLHelper.deleteEtudiant(etudiant.id);
-                  _getListeEtudiants(); // Refresh list after deletion
+                  final confirmation = await showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Supprimer l\'étudiant'),
+                      content: const Text('Êtes-vous sûr de vouloir supprimer cet étudiant ?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false), // Cancel
+                          child: const Text('Annuler'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true), // Confirm
+                          child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmation == true) {
+                    await SqlHelper.deleteEtudiant(etudiant.id);
+                    _getListeEtudiants(); // Refresh list after deletion
+                  }
                 },
               ),
             ],
