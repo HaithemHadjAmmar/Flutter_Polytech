@@ -1,10 +1,11 @@
 // ignore_for_file: file_names
 
 import 'package:sqflite/sqflite.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SqlHelper {
-  static const String _databaseName = 'etudiants.db';
-  static const String _tableName = 'etudiants';
+  static const String _databaseName = 'contacts.db';
+  static const String _tableName = 'contacts';
   static Database? _database;
 
   // Method to initialize the database
@@ -18,77 +19,101 @@ class SqlHelper {
       path,
       version: 1,
       onCreate: (db, version) {
-        // Create table statement with necessary columns (id, name, age)
+        // Create table statement with necessary columns (id, name, phone)
         db.execute('''
           CREATE TABLE $_tableName (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            age INTEGER NOT NULL
+            phone TEXT NOT NULL
           )
         ''');
       },
     );
   }
 
-  // Method to insert a new etudiant
-  static Future<void> insertEtudiant(List<Etudiant> etudiants) async {
+  // Method to insert a new contact
+  static Future<void> insertContact(List<Contact> contacts) async {
     await _initDatabase();
     final batch = _database!.batch();
-    for (final etudiant in etudiants) {
-      batch.insert(_tableName, etudiant.toMap());
+    for (final contact in contacts) {
+      batch.insert(_tableName, contact.toMap());
     }
     await batch.commit();
   }
 
-  // Method to get all etudiants
-  static Future<List<Etudiant>> getAllEtudiants() async {
+  // Method to get all contacts
+  static Future<List<Contact>> getAllContacts() async {
     await _initDatabase();
     final List<Map<String, dynamic>> maps = await _database!.query(_tableName);
-    return List.generate(maps.length, (i) => Etudiant.fromMap(maps[i]));
+    return List.generate(maps.length, (i) => Contact.fromMap(maps[i]));
   }
 
-  // Method to update an existing etudiant
-  static Future<void> updateEtudiant(Etudiant etudiant) async {
+  // Method to update an existing contact
+  static Future<void> updateContact(Contact contact) async {
     await _initDatabase();
     await _database!.update(
       _tableName,
-      etudiant.toMap(),
+      contact.toMap(),
       where: 'id = ?',
-      whereArgs: [etudiant.id],
+      whereArgs: [contact.id],
     );
   }
 
-  // Method to delete an etudiant
-  static Future<void> deleteEtudiant(int id) async {
+  // Method to delete a contact
+  static Future<void> deleteContact(int id) async {
     await _initDatabase();
     await _database!.delete(_tableName, where: 'id = ?', whereArgs: [id]);
   }
+
+  // Method to search contacts by name or phone number
+  static Future<List<Contact>> searchContacts(String query) async {
+    await _initDatabase();
+    final List<Map<String, dynamic>> maps = await _database!.query(
+      _tableName,
+      where: 'name LIKE ? OR phone LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+    return List.generate(maps.length, (i) => Contact.fromMap(maps[i]));
+  }
+
+  // Method to call a contact
+  static Future<void> callContact(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunch(launchUri.toString())) {
+      await launch(launchUri.toString());
+    } else {
+      throw 'Could not launch $phoneNumber';
+    }
+  }
 }
 
-class Etudiant {
+class Contact {
   final int id;
   final String name;
-  final int age;
+  final String phone;
 
-  const Etudiant({
+  const Contact({
     required this.id,
     required this.name,
-    required this.age,
+    required this.phone,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
-      'age': age,
+      'phone': phone,
     };
   }
 
-  factory Etudiant.fromMap(Map<String, dynamic> map) {
-    return Etudiant(
+  factory Contact.fromMap(Map<String, dynamic> map) {
+    return Contact(
       id: map['id'] as int,
       name: map['name'] as String,
-      age: map['age'] as int,
+      phone: map['phone'] as String,
     );
   }
 }

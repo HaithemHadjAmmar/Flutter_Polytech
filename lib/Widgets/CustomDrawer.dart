@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:polytech/ajouteretudaint/AjouterEtudiant.dart';
 import 'package:get/get.dart';
+import 'package:polytech/homepage/HomePage.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({Key? key}) : super(key: key);
@@ -26,19 +27,23 @@ class CustomDrawer extends StatelessWidget {
           ),
 
           ListTile(
-            title: Text('Liste des etudiants'),
+            title: Text('Liste des Contacts'),
             onTap: () {
-              // Handle item tap
+              Get.to(
+                    () => HomePage(),
+                transition: Transition.fadeIn,
+                duration: Duration(milliseconds: 500),
+              );
             },
           ),
 
           Divider(color: Colors.grey, thickness: 0.5),
 
           ListTile(
-            title: Text('Ajouter Etudiant'),
+            title: Text('Ajouter Contacts'),
             onTap: () {
               Get.to(
-                    () => AjouterEtudiant(),
+                    () => AjouterContact(),
                 transition: Transition.fadeIn,
                 duration: Duration(milliseconds: 500),
               );

@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:polytech/Widgets/CustomDrawer.dart';
 import 'package:polytech/sqlhelper/SqlHelper.dart';
-import 'package:polytech/updatesetudiant/UpdateEtudiants.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../updatesetudiant/UpdateEtudiants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,19 +16,56 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Etudiant> _etudiants = [];
+  List<Contact> _contacts = [];
 
   @override
   void initState() {
     super.initState();
-    _getListeEtudiants();
+    _getContactList();
   }
 
-  Future<void> _getListeEtudiants() async {
-    final newEtudiants = await SqlHelper.getAllEtudiants();
+  Future<void> _getContactList() async {
+    final newContacts = await SqlHelper.getAllContacts();
     setState(() {
-      _etudiants = newEtudiants;
+      _contacts = newContacts;
     });
+  }
+
+  Future<void> _showCallDialog(String phoneNumber) async {
+    if (await Permission.phone.request().isGranted) {
+      // Permission is granted. You can now initiate the call.
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Appeler le contact'),
+          content: Text('Voulez-vous appeler ce numéro : $phoneNumber ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(), // Cancel
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // Dismiss dialog
+                final Uri launchUri = Uri(
+                  scheme: 'tel',
+                  path: phoneNumber,
+                );
+                if (await canLaunch(launchUri.toString())) {
+                  await launch(launchUri.toString());
+                } else {
+                  throw 'Could not launch $phoneNumber';
+                }
+              },
+              child: const Text('Appeler', style: TextStyle(color: Colors.green)),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Permission is not granted. You can handle this case.
+      // For example, you can show a snackbar or dialog to inform the user.
+    }
   }
 
   @override
@@ -38,7 +77,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.greenAccent,
         elevation: 2,
         title: const Text(
-          'Acceuil',
+          'Accueil',
           style: TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.w700),
@@ -49,31 +88,38 @@ class _HomePageState extends State<HomePage> {
           columns: const [
             DataColumn(label: Text('ID')),
             DataColumn(label: Text('Nom')),
-            DataColumn(label: Text('Age')),
+            DataColumn(label: Text('Téléphone')),
             DataColumn(label: Text('Actions')),
           ],
-          rows: _etudiants.map((etudiant) => _buildDataRow(etudiant)).toList(),
+          rows: _contacts.map((contact) => _buildDataRow(contact)).toList(),
         ),
       ),
     );
   }
 
-  DataRow _buildDataRow(Etudiant etudiant) {
+  DataRow _buildDataRow(Contact contact) {
     return DataRow(
       cells: [
-        DataCell(Text(etudiant.id.toString())),
-        DataCell(Text(etudiant.name)),
-        DataCell(Text(etudiant.age.toString() + ' ans')),
+        DataCell(Text(contact.id.toString())),
+        DataCell(Text(contact.name)),
+        DataCell(
+          GestureDetector(
+            onTap: () => _showCallDialog(contact.phone),
+            child: Text(
+              contact.phone,
+              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+            ),
+          ),
+        ),
         DataCell(
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.greenAccent),
                 onPressed: () {
-                  Get.to(UpdateEtudiant(etudiant: etudiant),
+                  Get.to(UpdateContact(contact: contact),
                       transition: Transition.fadeIn,
-                     duration: Duration(milliseconds: 500));
+                      duration: Duration(milliseconds: 500));
                 },
               ),
               IconButton(
@@ -82,8 +128,8 @@ class _HomePageState extends State<HomePage> {
                   final confirmation = await showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Supprimer l\'étudiant'),
-                      content: const Text('Êtes-vous sûr de vouloir supprimer cet étudiant ?'),
+                      title: const Text('Supprimer le contact'),
+                      content: const Text('Êtes-vous sûr de vouloir supprimer ce contact ?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false), // Cancel
@@ -98,8 +144,8 @@ class _HomePageState extends State<HomePage> {
                   );
 
                   if (confirmation == true) {
-                    await SqlHelper.deleteEtudiant(etudiant.id);
-                    _getListeEtudiants(); // Refresh list after deletion
+                    await SqlHelper.deleteContact(contact.id);
+                    _getContactList(); // Refresh list after deletion
                   }
                 },
               ),

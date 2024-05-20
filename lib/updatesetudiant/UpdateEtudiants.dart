@@ -1,26 +1,27 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Assuming you're using GetX for navigation
-import 'package:polytech/homepage/HomePage.dart';
 import 'package:polytech/sqlhelper/SqlHelper.dart';
 
-class UpdateEtudiant extends StatefulWidget {
-  const UpdateEtudiant({Key? key, required this.etudiant}) : super(key: key);
-  final Etudiant etudiant;
+class UpdateContact extends StatefulWidget {
+  final Contact contact;
+
+  const UpdateContact({Key? key, required this.contact}) : super(key: key);
+
   @override
-  State<UpdateEtudiant> createState() => _UpdateEtudiantState();
+  _UpdateContactState createState() => _UpdateContactState();
 }
 
-class _UpdateEtudiantState extends State<UpdateEtudiant> {
-  final _formKey = GlobalKey<FormState>(); // Key for form validation
-  final _nameController = TextEditingController();
-  final _ageController = TextEditingController();
+class _UpdateContactState extends State<UpdateContact> {
+  final _formKey = GlobalKey<FormState>();
+  late String _name;
+  late String _phone;
 
   @override
   void initState() {
     super.initState();
-    // Pre-populate controllers with existing data from 'widget.etudiant'
-    _nameController.text = widget.etudiant.name;
-    _ageController.text = widget.etudiant.age.toString();
+    _name = widget.contact.name;
+    _phone = widget.contact.phone;
   }
 
   @override
@@ -28,12 +29,7 @@ class _UpdateEtudiantState extends State<UpdateEtudiant> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Colors.greenAccent,
-        elevation: 2,
-        title: const Text(
-          'Update Etudiant',
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700),
-        ),
+        title: Text('Modifier Contact'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,39 +37,55 @@ class _UpdateEtudiantState extends State<UpdateEtudiant> {
           key: _formKey,
           child: Column(
             children: [
-              // Form fields for name, age, and CNE (if applicable)
               TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Nom'),
-                validator: (value) => value!.isEmpty ? 'Veuillez entrer un nom' : null, // Basic validation
+                initialValue: _name,
+                decoration: InputDecoration(labelText: 'Nom'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer un nom';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  setState(() {
+                    _name = value!;
+                  });
+                },
               ),
-
-              SizedBox(height: 20),
-
+              SizedBox(height: 16),
               TextFormField(
-                controller: _ageController,
-                decoration: const InputDecoration(labelText: 'Age'),
-                validator: (value) => value!.isEmpty ? 'Veuillez entrer un age' : null, // Basic validation
+                initialValue: _phone,
+                decoration: InputDecoration(labelText: 'Téléphone'),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer un numéro de téléphone';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  setState(() {
+                    _phone = value!;
+                  });
+                },
               ),
-
-              SizedBox(height: 20),
-
+              SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    final updatedEtudiant = Etudiant(
-                      id: widget.etudiant.id, // Maintain existing ID
-                      name: _nameController.text,
-                      age: int.parse(_ageController.text),
-                   // Handle optional CNE
+                    _formKey.currentState!.save();
+
+                    final updatedContact = Contact(
+                      id: widget.contact.id,
+                      name: _name,
+                      phone: _phone,
                     );
-                    await SqlHelper.updateEtudiant(updatedEtudiant);
-                    Get.to(HomePage(),
-                        transition: Transition.fadeIn,
-                        duration: Duration(milliseconds: 500));
+                    await SqlHelper.updateContact(updatedContact);
+
+                    Navigator.of(context).pop();
                   }
                 },
-                child: const Text('Update'),
+                child: Text('Modifier'),
               ),
             ],
           ),

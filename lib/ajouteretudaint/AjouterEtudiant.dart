@@ -5,21 +5,21 @@ import 'package:polytech/homepage/HomePage.dart';
 import 'package:polytech/sqlhelper/SqlHelper.dart';
 import 'package:get/get.dart';
 
-class AjouterEtudiant extends StatefulWidget {
-  const AjouterEtudiant({Key? key}) : super(key: key);
+class AjouterContact extends StatefulWidget {
+  const AjouterContact({Key? key}) : super(key: key);
 
   @override
-  State<AjouterEtudiant> createState() => _AjouterEtudiantState();
+  State<AjouterContact> createState() => _AjouterContactState();
 }
 
-class _Etudiant {
+class _Contact {
   String name = '';
-  int age = 0;
+  String phone = '';
 }
 
-class _AjouterEtudiantState extends State<AjouterEtudiant> {
+class _AjouterContactState extends State<AjouterContact> {
   final _formKey = GlobalKey<FormState>();
-  final _etudiant = _Etudiant();
+  final _contact = _Contact();
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +27,12 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
       appBar: AppBar(
         backgroundColor: Colors.greenAccent,
         centerTitle: true,
-        title: Text('Ajouter Etudiant'),
+        title: Text('Ajouter Contact'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Set the form key
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
@@ -42,7 +42,7 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
                     borderSide: const BorderSide(
-                      color: Colors.grey, // Border color
+                      color: Colors.grey,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
@@ -64,14 +64,14 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
                   }
                   return null;
                 },
-                onSaved: (value) => _etudiant.name = value!,
+                onSaved: (value) => _contact.name = value!,
               ),
 
               SizedBox(height: 20),
 
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'Age',
+                  labelText: 'Téléphone',
                   contentPadding: const EdgeInsets.all(12.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -92,14 +92,14 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
                     ),
                   ),
                 ),
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Veuillez entrer un age';
+                    return 'Veuillez entrer un numéro de téléphone';
                   }
                   return null;
                 },
-                onSaved: (value) => _etudiant.age = int.parse(value!),
+                onSaved: (value) => _contact.phone = value!,
               ),
 
               SizedBox(height: 20),
@@ -107,27 +107,27 @@ class _AjouterEtudiantState extends State<AjouterEtudiant> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save(); // Save form data
+                    _formKey.currentState!.save();
 
-                    // Create an Etudiant object from _etudiant data
-                    final newEtudiant = Etudiant(
+                    // Create a Contact object from _contact data
+                    final newContact = Contact(
                       id: 0, // Auto-incrementing ID
-                      name: _etudiant.name,
-                      age: _etudiant.age,
+                      name: _contact.name,
+                      phone: _contact.phone,
                     );
-                    await SqlHelper.insertEtudiant([newEtudiant]);
+                    await SqlHelper.insertContact([newContact]);
 
                     // Show a success message (optional)
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Etudiant ajouté avec succès!'),),
+                      const SnackBar(content: Text('Contact ajouté avec succès!')),
                     );
 
                     // Clear the form (optional)
                     _formKey.currentState!.reset();
-                    _etudiant.name = '';
-                    _etudiant.age = 0;
+                    _contact.name = '';
+                    _contact.phone = '';
 
-                    // Navigate to HomeScreen and potentially refresh data
+                    // Navigate to HomePage and potentially refresh data
                     Get.to(
                           () => HomePage(),
                       transition: Transition.fadeIn,
