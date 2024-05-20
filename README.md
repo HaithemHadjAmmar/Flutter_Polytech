@@ -1,4 +1,3 @@
-
 # Polytech
 
 This Flutter project is aimed at helping students manage their contacts efficiently.
@@ -21,24 +20,19 @@ To get started with this project, follow these steps:
 
    ```bash
    git clone https://github.com/your-username/polytech.git
-Navigate to the project directory:
 
-bash
-Copier le code
-cd polytech
-Install dependencies using flutter pub get:
+2. Navigate to the project directory:
 
-bash
-Copier le code
-flutter pub get
-Run the project on your desired device:
+   ```bash
+   cd polytech
 
-bash
-Copier le code
-flutter run
-Dependencies
-This project uses the following packages:
 
-url_launcher: For launching phone calls directly from the app.
-permission_handler: For handling permissions related to phone calls.
-sqflite: For local database operations.
+3.Install dependencies using:
+
+   ```bash
+    flutter pub get
+
+4.Run the project on your desired device:
+
+   ```bash
+   flutter run
