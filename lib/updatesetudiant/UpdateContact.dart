@@ -5,8 +5,9 @@ import 'package:polytech/sqlhelper/SqlHelper.dart';
 
 class UpdateContact extends StatefulWidget {
   final Contact contact;
+  final VoidCallback onUpdate;
 
-  const UpdateContact({Key? key, required this.contact}) : super(key: key);
+  const UpdateContact({Key? key, required this.contact, required this.onUpdate}) : super(key: key);
 
   @override
   _UpdateContactState createState() => _UpdateContactState();
@@ -82,6 +83,10 @@ class _UpdateContactState extends State<UpdateContact> {
                     );
                     await SqlHelper.updateContact(updatedContact);
 
+                    // Call the onUpdate callback to notify the HomePage to refresh
+                    widget.onUpdate();
+
+                    // Pop the current route
                     Navigator.of(context).pop();
                   }
                 },
