@@ -29,10 +29,15 @@ To get started with this project, follow these steps:
 
 3.Install dependencies using:
 
-   ```bash
-    flutter pub get
+cd flutter pub get
 
 4.Run the project on your desired device:
 
-   ```bash
-   flutter run
+ flutter run
+
+Dependencies
+  This project uses the following packages:
+
+  url_launcher: For launching phone calls directly from the app.
+  permission_handler: For handling permissions related to phone calls.
+  sqflite: For local database operations.
