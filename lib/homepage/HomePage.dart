@@ -6,7 +6,7 @@ import 'package:polytech/sqlhelper/SqlHelper.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../updatesetudiant/UpdateEtudiants.dart';
+import '../updatesetudiant/UpdateContact.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -116,10 +116,11 @@ class _HomePageState extends State<HomePage> {
             children: [
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.greenAccent),
-                onPressed: () {
-                  Get.to(UpdateContact(contact: contact),
-                      transition: Transition.fadeIn,
-                      duration: Duration(milliseconds: 500));
+                onPressed: () async {
+                  final updatedContact = await Get.to(() => UpdateContact(contact: contact, onUpdate: _getContactList));
+                  if (updatedContact != null) {
+                    _getContactList(); // Refresh list after updating
+                  }
                 },
               ),
               IconButton(
