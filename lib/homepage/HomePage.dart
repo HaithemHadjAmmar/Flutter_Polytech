@@ -77,6 +77,13 @@ class _HomePageState extends State<HomePage> {
       // For example, you can show a snackbar or dialog to inform the user.
     }
   }
+
+  // Method to delete a contact
+  Future<void> _deleteContact(Contact contact) async {
+    await SqlHelper.deleteContact(contact.id!);
+    _getContactList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,8 +172,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
-
         ],
       ),
     );
@@ -213,9 +218,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                         TextButton(
                           onPressed: () async {
-                            await SqlHelper.deleteContact(contact.id);
-                            _getContactList(); // Refresh list after deletion
                             Navigator.pop(context, true); // Confirm
+                            _deleteContact(contact); // Delete contact
                           },
                           child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
                         ),
@@ -224,7 +228,7 @@ class _HomePageState extends State<HomePage> {
                   );
 
                   if (confirmation == true) {
-                    await SqlHelper.deleteContact(contact.id);
+                    await SqlHelper.deleteContact(contact.id!);
                     _getContactList(); // Refresh list after deletion
                   }
                 },

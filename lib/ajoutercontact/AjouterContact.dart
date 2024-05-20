@@ -111,7 +111,6 @@ class _AjouterContactState extends State<AjouterContact> {
 
                     // Create a Contact object from _contact data
                     final newContact = Contact(
-                      id: 0, // Auto-incrementing ID
                       name: _contact.name,
                       phone: _contact.phone,
                     );

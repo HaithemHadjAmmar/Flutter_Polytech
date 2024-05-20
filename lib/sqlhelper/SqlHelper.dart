@@ -91,12 +91,12 @@ class SqlHelper {
 }
 
 class Contact {
-  final int id;
+  final int? id;
   final String name;
   final String phone;
 
   const Contact({
-    required this.id,
+    this.id,
     required this.name,
     required this.phone,
   });
@@ -109,11 +109,17 @@ class Contact {
     };
   }
 
+
   factory Contact.fromMap(Map<String, dynamic> map) {
+    int? id;
+    if (map['id'] != 0) {
+      id = map['id'] as int;
+    }
     return Contact(
-      id: map['id'] as int,
+      id: id,
       name: map['name'] as String,
-      phone: map['phone'] as String,
+        phone: map['phone'] as String
     );
   }
 }
+
