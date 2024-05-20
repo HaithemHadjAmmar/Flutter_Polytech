@@ -21,7 +21,7 @@ class CustomDrawer extends StatelessWidget {
             child: Center(
               child: CircleAvatar(
                 radius: 60,
-                backgroundImage: AssetImage('assets/nft.png'),
+                backgroundImage: AssetImage('assets/code.png'),
               ),
             ),
           ),

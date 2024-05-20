@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage> {
                     DataCell(
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 150), // Adjust padding as needed
+                          padding: const EdgeInsets.only(right: 150),
                           child: Text(
                             'Aucun contact trouvé',
                             style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
