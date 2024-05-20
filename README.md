@@ -27,13 +27,15 @@ To get started with this project, follow these steps:
    cd polytech
 
 
-3.Install dependencies using:
+3. Install dependencies using:
 
-cd flutter pub get
+   ```bash
+   cd flutter pub get
 
-4.Run the project on your desired device:
+4. Run the project on your desired device:
 
- flutter run
+   ```bash
+   flutter run
 
 Dependencies
   This project uses the following packages:
