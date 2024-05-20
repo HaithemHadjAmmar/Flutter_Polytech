@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
-import 'package:polytech/ajouteretudaint/AjouterContact.dart';
+import 'package:polytech/ajoutercontact/AjouterContact.dart';
 import 'package:get/get.dart';
 import 'package:polytech/homepage/HomePage.dart';
 

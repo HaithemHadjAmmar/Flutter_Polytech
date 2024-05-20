@@ -6,7 +6,7 @@ import 'package:polytech/sqlhelper/SqlHelper.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../updatesetudiant/UpdateContact.dart';
+import '../updatescontact/UpdateContact.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -17,6 +17,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Contact> _contacts = [];
+  List<Contact> _searchResults = [];
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -30,6 +32,14 @@ class _HomePageState extends State<HomePage> {
       _contacts = newContacts;
     });
   }
+
+  Future<void> _searchContacts(String query) async {
+    final searchResults = await SqlHelper.searchContacts(query);
+    setState(() {
+      _searchResults = searchResults;
+    });
+  }
+
 
   Future<void> _showCallDialog(String phoneNumber) async {
     if (await Permission.phone.request().isGranted) {
@@ -67,7 +77,6 @@ class _HomePageState extends State<HomePage> {
       // For example, you can show a snackbar or dialog to inform the user.
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,20 +88,86 @@ class _HomePageState extends State<HomePage> {
         title: const Text(
           'Accueil',
           style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.w700),
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('ID')),
-            DataColumn(label: Text('Nom')),
-            DataColumn(label: Text('Téléphone')),
-            DataColumn(label: Text('Actions')),
-          ],
-          rows: _contacts.map((contact) => _buildDataRow(contact)).toList(),
-        ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher par nom ou téléphone',
+                    prefixIcon: Icon(Icons.search),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                    _searchContacts(value);
+                  },
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10),
+
+          Expanded(
+            child: SingleChildScrollView(
+              child: _searchResults.isNotEmpty || _searchQuery.isNotEmpty
+                  ? DataTable(
+                columns: const [
+                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('Nom')),
+                  DataColumn(label: Text('Téléphone')),
+                  DataColumn(label: Text('Actions')),
+                ],
+                rows: _searchResults.isNotEmpty
+                    ? _searchResults.map((contact) => _buildDataRow(contact)).toList()
+                    : [
+                  DataRow(cells: [
+                    DataCell(Text('')),
+                    DataCell(Text('')),
+                    DataCell(
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 150), // Adjust padding as needed
+                          child: Text(
+                            'Aucun contact trouvé',
+                            style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                    DataCell(Text('')),
+                  ])
+                ],
+              )
+                  : DataTable(
+                columns: const [
+                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('Nom')),
+                  DataColumn(label: Text('Téléphone')),
+                  DataColumn(label: Text('Actions')),
+                ],
+                rows: _contacts.map((contact) => _buildDataRow(contact)).toList(),
+              ),
+            ),
+          ),
+
+
+        ],
       ),
     );
   }
@@ -137,7 +212,11 @@ class _HomePageState extends State<HomePage> {
                           child: const Text('Annuler'),
                         ),
                         TextButton(
-                          onPressed: () => Navigator.pop(context, true), // Confirm
+                          onPressed: () async {
+                            await SqlHelper.deleteContact(contact.id);
+                            _getContactList(); // Refresh list after deletion
+                            Navigator.pop(context, true); // Confirm
+                          },
                           child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
                         ),
                       ],
