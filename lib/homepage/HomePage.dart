@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../updatescontact/UpdateContact.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -40,10 +41,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
   Future<void> _showCallDialog(String phoneNumber) async {
     if (await Permission.phone.request().isGranted) {
-      // Permission is granted. You can now initiate the call.
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -51,12 +50,12 @@ class _HomePageState extends State<HomePage> {
           content: Text('Voulez-vous appeler ce numéro : $phoneNumber ?'),
           actions: [
             TextButton(
-              onPressed: () => Get.back(), // Cancel
+              onPressed: () => Get.back(),
               child: const Text('Annuler'),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.pop(context); // Dismiss dialog
+                Navigator.pop(context);
                 final Uri launchUri = Uri(
                   scheme: 'tel',
                   path: phoneNumber,
@@ -72,13 +71,9 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       );
-    } else {
-      // Permission is not granted. You can handle this case.
-      // For example, you can show a snackbar or dialog to inform the user.
     }
   }
 
-  // Method to delete a contact
   Future<void> _deleteContact(Contact contact) async {
     await SqlHelper.deleteContact(contact.id!);
     _getContactList();
@@ -86,6 +81,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context, designSize: Size(375, 812), minTextAdapt: true );
+
     return Scaffold(
       drawer: CustomDrawer(),
       appBar: AppBar(
@@ -93,9 +90,9 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.greenAccent,
         elevation: 2,
         title: const Text(
-          'Accueil',
+          'Liste Des Contacts',
           style: TextStyle(
-            fontSize: 25,
+            fontSize: 22,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -103,11 +100,11 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(12.w),
             child: Center(
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(color: Colors.grey),
                 ),
                 child: TextField(
@@ -126,117 +123,125 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
-          SizedBox(height: 10),
-
+          SizedBox(height: 10.h),
           Expanded(
-            child: SingleChildScrollView(
-              child: _searchResults.isNotEmpty || _searchQuery.isNotEmpty
-                  ? DataTable(
-                columns: const [
-                  DataColumn(label: Text('ID')),
-                  DataColumn(label: Text('Nom')),
-                  DataColumn(label: Text('Téléphone')),
-                  DataColumn(label: Text('Actions')),
-                ],
-                rows: _searchResults.isNotEmpty
-                    ? _searchResults.map((contact) => _buildDataRow(contact)).toList()
-                    : [
-                  DataRow(cells: [
-                    DataCell(Text('')),
-                    DataCell(Text('')),
-                    DataCell(
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 150),
-                          child: Text(
-                            'Aucun contact trouvé',
-                            style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    ),
-                    DataCell(Text('')),
-                  ])
-                ],
-              )
-                  : DataTable(
-                columns: const [
-                  DataColumn(label: Text('ID')),
-                  DataColumn(label: Text('Nom')),
-                  DataColumn(label: Text('Téléphone')),
-                  DataColumn(label: Text('Actions')),
-                ],
-                rows: _contacts.map((contact) => _buildDataRow(contact)).toList(),
-              ),
-            ),
+            child: _buildContactList(),
           ),
         ],
       ),
     );
   }
 
-  DataRow _buildDataRow(Contact contact) {
-    return DataRow(
-      cells: [
-        DataCell(Text(contact.id.toString())),
-        DataCell(Text(contact.name)),
-        DataCell(
-          GestureDetector(
-            onTap: () => _showCallDialog(contact.phone),
-            child: Text(
-              contact.phone,
-              style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
-            ),
-          ),
-        ),
-        DataCell(
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.greenAccent),
-                onPressed: () async {
-                  final updatedContact = await Get.to(() => UpdateContact(contact: contact, onUpdate: _getContactList));
-                  if (updatedContact != null) {
-                    _getContactList(); // Refresh list after updating
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () async {
-                  final confirmation = await showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Supprimer le contact'),
-                      content: const Text('Êtes-vous sûr de vouloir supprimer ce contact ?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false), // Cancel
-                          child: const Text('Annuler'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context, true); // Confirm
-                            _deleteContact(contact); // Delete contact
-                          },
-                          child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
-                        ),
-                      ],
-                    ),
-                  );
+  Widget _buildContactList() {
+    final contacts = _searchResults.isNotEmpty || _searchQuery.isNotEmpty
+        ? _searchResults
+        : _contacts;
 
-                  if (confirmation == true) {
-                    await SqlHelper.deleteContact(contact.id!);
-                    _getContactList(); // Refresh list after deletion
-                  }
-                },
-              ),
-            ],
-          ),
+    if (contacts.isEmpty) {
+      return Center(
+        child: Text(
+          'Aucun contact trouvé',
+          style: TextStyle(color: Colors.red, fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
-      ],
+      );
+    }
+
+    return GridView.builder(
+      padding: EdgeInsets.all(8.0.w),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8.0.w,
+        mainAxisSpacing: 8.0.h,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: contacts.length,
+      itemBuilder: (context, index) {
+        final contact = contacts[index];
+        return _buildContactCard(contact);
+      },
+    );
+  }
+
+  Widget _buildContactCard(Contact contact) {
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0.r),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: 12.0.w, left: 8.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'ID: ${contact.id}',
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              'Nom: ${contact.name}',
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w900),
+            ),
+            SizedBox(height: 10.h),
+            GestureDetector(
+              onTap: () => _showCallDialog(contact.phone),
+              child: Text(
+                'Téléphone: ${contact.phone}',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit, color: Colors.greenAccent, size: 30.w),
+                  onPressed: () async {
+                    final updatedContact = await Get.to(() => UpdateContact(contact: contact, onUpdate: _getContactList));
+                    if (updatedContact != null) {
+                      _getContactList();
+                    }
+                  },
+                ),
+                SizedBox(width: 12.w),
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red, size: 30.w),
+                  onPressed: () async {
+                    final confirmation = await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Supprimer le contact'),
+                        content: const Text('Êtes-vous sûr de vouloir supprimer ce contact ?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Annuler'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(context, true);
+                              _deleteContact(contact);
+                            },
+                            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirmation == true) {
+                      await SqlHelper.deleteContact(contact.id!);
+                      _getContactList();
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
