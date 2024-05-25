@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisCount: 2,
         crossAxisSpacing: 8.0.w,
         mainAxisSpacing: 8.0.h,
-        childAspectRatio: 0.8,
+        childAspectRatio: 0.9,
       ),
       itemCount: contacts.length,
       itemBuilder: (context, index) {
