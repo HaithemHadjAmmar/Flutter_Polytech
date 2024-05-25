@@ -164,7 +164,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildContactCard(Contact contact) {
     return Card(
-      elevation: 4.0,
+     shadowColor: Colors.grey,
+      elevation: 5.0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0.r),
       ),
